@@ -8,7 +8,7 @@ from rest_framework.renderers import JSONRenderer
 import json
 from rest_framework import status
 
-# Create inventory items
+# Check if the inventory item exists. If not, create it.
 class CreateProductView(APIView):
     def post(self, request, format=None):
         title = request.data['name']
@@ -23,7 +23,8 @@ class CreateProductView(APIView):
             content = {"detail":"Item already exists."}
             return Response(content,status=status.HTTP_400_BAD_REQUEST)
 
-# Edit inventory items
+# If the inventory item exists, then update the items price. Otherwise throw an error.
+# I made the assumption that price can be changed more often than the other fields (name, code, description).
 class EditProductView(APIView):
     def post(self, request, format=None):
         new_price = request.data['price']
@@ -38,7 +39,7 @@ class EditProductView(APIView):
             return Response(content,status=status.HTTP_404_NOT_FOUND)
         
 
-# Delete inventory items
+# If the inventory item exists, then delete inventory items. Otherwise throw an error.
 class DeleteProductView(APIView):
     def post(self, request, format=None):
         code = request.data['upc']
@@ -51,7 +52,7 @@ class DeleteProductView(APIView):
             content = {"detail":"Not found."}
             return Response(content,status=status.HTTP_404_NOT_FOUND)
 
-# Read a list of all inventory items
+# Return a list of all inventory items.
 class GetAllProductsView(APIView):
     def get(self, request, format=None):
         objs = Product.objects.all()
@@ -60,7 +61,8 @@ class GetAllProductsView(APIView):
         items = json.loads(d)
         return Response({"item_list":items})
 
-# Read a searched inventory item
+# I made the assumption that a user might also want to search for a specific item.
+# Return a searched inventory item.
 class GetProductView(APIView):
     def get(self, request, format=None):
         code = request.query_params.get('upc')
@@ -72,7 +74,7 @@ class GetProductView(APIView):
             "upc": item.product_code
         })
 
-# Create warehouses
+# Check if the warehouse exists. If not, create a new warehouse.
 class CreateWarehouseView(APIView):
     def post(self, request, format=None):
         building = request.data['building_name']
@@ -94,7 +96,8 @@ class CreateWarehouseView(APIView):
             content = {"detail":"Warehouse already exists."}
             return Response(content,status=status.HTTP_400_BAD_REQUEST)
 
-# Assign item to warehouses
+# I made the assumption that the user knows what the item and warehouse is. If either of them do not exist in the database, throw an error.
+# Check if the inventory item exists in the warehouse. If not, assign the item to the warehouse.
 class AssignProductWarehouseView(APIView):
     def post(self, request, format=None):
         code = request.data['upc']
